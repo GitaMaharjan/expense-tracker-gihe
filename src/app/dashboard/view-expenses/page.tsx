@@ -21,18 +21,26 @@ import {
   TrendingDown,
   Wallet,
 } from "lucide-react";
-import { useEffect } from "react";
+
+const getExpenses = async () => {
+  try {
+    const response = await fetch(
+      process.env.BASE_URI +"/api/expenses/get-expenses"
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.log("Error fetching expenses:", error);
+    return [];
+  }
+};
 
 export default async function Page() {
-  const response = await fetch(
-    process.env.NEXT_PUBLIC_BASE_URI + "/api/expenses/get-expenses",
-    {
-      method: "GET",
-    }
-  );
-  const result = await response.json();
-  const expenses = result.expenses;
-  console.log(result);
+  let expenses: any = [];
+  expenses = await getExpenses();
+  console.log(expenses);
+
+  // console.log(process.env.NEXT_PUBLIC_BASE_URI);
 
   return (
     <div className="space-y-6">
@@ -42,7 +50,7 @@ export default async function Page() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {expenses.map((expense: any) => (
+            {expenses?.data?.map((expense: any) => (
               <div
                 key={expense.id}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"

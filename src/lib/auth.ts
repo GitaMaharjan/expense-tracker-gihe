@@ -66,5 +66,20 @@ export const authOptions: NextAuthOptions = {
   // Define how sessions are managed
   session: {
     strategy: "jwt", // store session info in a signed JWT instead of database
-  }
+  },
+  callbacks: {
+  async jwt({ token, user }) {
+    if (user) {
+      token._id = user._id; // or user.id
+    }
+    return token;
+  },
+  async session({ session, token }) {
+    if (session.user) {
+      session.user._id = token._id as string;
+    }
+    return session;
+  },
+}
+
 };

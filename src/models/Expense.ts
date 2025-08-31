@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
 const ExpenseSchema = new mongoose.Schema({
-  name: {
+  type: {
     type: String,
-    required: true, 
+    required: true,
   },
   description: {
-    type: String, 
+    type: String,
   },
   amount: {
     type: Number,
@@ -24,7 +24,8 @@ const ExpenseSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User', // link expense to a user
-    required: true,}
+    required: true,
+  }
 });
 
-export default mongoose.models.Expense || mongoose.model('Item', ExpenseSchema);
+export default mongoose.models.Expense || mongoose.model('Expense', ExpenseSchema);
