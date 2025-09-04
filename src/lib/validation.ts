@@ -11,7 +11,7 @@ const expenseSchema = z.object({
         .positive("Amount must be greater than 0")
         .max(1000000, "Amount cannot exceed $1,000,000")
         .refine(val => Number(val.toFixed(2)) === val, { message: "Amount cannot have more than 2 decimal places" }),
-    category: z.enum(["Food", "Transport", "Utilities", "Entertainment", "Health", "Other"], {
+    category: z.enum(["Food", "Transport", "Utilities", "Entertainment", "Shopping", "Bills", "Healthcare", "Salary", "Freelance", "Investment", "Other"], {
         errorMap: () => ({ message: "Please select a valid category" })
     }),
     description: z.string({

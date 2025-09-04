@@ -7,7 +7,7 @@ import { getServerSession } from "next-auth";
 
 export async function POST(request: Request) {
     const data = await request.json();
-    console.log(data, "gitanda");
+    // console.log(data, "gitanda");
 
     await connectDB();
 
