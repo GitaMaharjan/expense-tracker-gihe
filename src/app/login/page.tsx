@@ -9,52 +9,91 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function Login() {
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsLoading(true);
+
     const formData = new FormData(event.currentTarget);
     const res = await signIn("credentials", {
-      email: formData.get("email"),
-      password: formData.get("password"),
+      email: formData.get("email") as string,
+      password: formData.get("password") as string,
       redirect: false,
     });
 
-    if (res?.error) {
-      setError(res.error as string);
-    }
-    if (res?.ok) {
-      return router.push("/dashboard");
-    }
+    setIsLoading(false);
+
+    if (res?.error) setError(res.error as string);
+    if (res?.ok) router.push("/dashboard");
   };
+
   return (
-    <section className="w-full h-screen flex items-center justify-center">
+    <section className="w-full h-screen flex items-center justify-center bg-gradient-to-br from-[#0b1e3d] to-[#1e3c72]">
       <form
-        className="p-6 w-full max-w-[400px] flex flex-col justify-between items-center gap-2 
-        border border-solid border-black bg-white rounded"
+        className="p-8 w-full max-w-[400px] flex flex-col gap-5
+          bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl shadow-lg
+          transition-transform transform hover:scale-105 duration-300"
         onSubmit={handleSubmit}
       >
-        {error && <div className="text-black">{error}</div>}
-        <h1 className="mb-5 w-full text-2xl font-bold">Sign In</h1>
+        <h1 className="text-3xl font-extrabold text-white text-center mb-4">
+          Welcome Back
+        </h1>
 
-        <Label className="w-full text-sm" htmlFor="email">
-          Email address
-        </Label>
+        {error && (
+          <div className="text-red-400 bg-red-900/30 p-2 rounded text-center">
+            {error}
+          </div>
+        )}
 
-        <Input type="email" placeholder="Email" name="email" />
-        <Label className="w-full text-sm">Password</Label>
-        <div className="flex w-full">
-          <Input type="password" placeholder="Password" name="password" />
+        <div className="flex flex-col gap-2">
+          <Label className="text-white/80 text-sm" htmlFor="email">
+            Email address
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            className="text-white placeholder-white/50 bg-white/10 border border-white/30
+                       focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] transition"
+          />
         </div>
-        <Button variant="outline">Sign In</Button>
 
-        <Link
-          href="/register"
-          className="text-sm text-[#888] transition duration-150 ease hover:text-black"
+        <div className="flex flex-col gap-2">
+          <Label className="text-white/80 text-sm" htmlFor="password">
+            Password
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            className="text-white placeholder-white/50 bg-white/10 border border-white/30
+                       focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6] transition"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          className="bg-gradient-to-r from-[#1e3c72] to-[#3b82f6] text-white font-semibold
+                     py-2 rounded-lg shadow-md hover:scale-105 transition-transform"
+          disabled={isLoading}
         >
-          Don't have an account?
-        </Link>
+          {isLoading ? "Signing In..." : "Sign In"}
+        </Button>
+
+        <p className="text-white/70 text-sm text-center">
+          Don't have an account?{" "}
+          <Link
+            href="/register"
+            className="text-[#3b82f6] hover:text-white font-medium transition-colors"
+          >
+            Sign Up
+          </Link>
+        </p>
       </form>
     </section>
   );

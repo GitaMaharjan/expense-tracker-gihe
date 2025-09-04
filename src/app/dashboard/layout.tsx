@@ -1,32 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  PlusCircle,
-  Receipt,
-  BarChart3,
-  DollarSign,
-  Tag,
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-} from "lucide-react";
+
+import { Wallet } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Routes } from "@/lib/dashboard-route";
 import * as Icons from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 
 interface Expense {
   id: string;
@@ -37,8 +18,27 @@ interface Expense {
   type: "income" | "expense";
 }
 
-export default function RootLayout({ children }: any) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { status } = useSession(); // get session state
   const router = useRouter();
+
+  // Protect dashboard
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/"); // kick user back to welcome page
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+  if (status === "unauthenticated") {
+    return null; //  don’t render anything
+  }
 
   const activeTab = usePathname();
   const currentRoute = Routes().find(
@@ -193,13 +193,20 @@ export default function RootLayout({ children }: any) {
                   "Analyze your spending patterns"}
               </p>
             </div>
-            <div className="text-sm text-gray-500">
-              {new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
+            <div>
+              <div className="text-sm text-gray-500">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+              <div>
+                <Button onClick={() => signOut({ callbackUrl: "/" })}>
+                  Sign out
+                </Button>
+              </div>
             </div>
           </div>
         </header>
