@@ -23,28 +23,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { status } = useSession(); // get session state
-  const router = useRouter();
-
-  // Protect dashboard
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/"); // kick user back to welcome page
-    }
-  }, [status, router]);
-
-  if (status === "loading") {
-    return <div>Loading...</div>;
-  }
-  if (status === "unauthenticated") {
-    return null; //  don’t render anything
-  }
-
-  const activeTab = usePathname();
-  const currentRoute = Routes().find(
-    (route) => route.path.trim() === activeTab.trim()
-  );
-
   const [expenses, setExpenses] = useState<Expense[]>([
     {
       id: "1",
@@ -79,6 +57,26 @@ export default function RootLayout({
     date: "",
     type: "expense" as "income" | "expense",
   });
+  const activeTab = usePathname();
+  const currentRoute = Routes().find(
+    (route) => route.path.trim() === activeTab.trim()
+  );
+  const { status } = useSession(); // get session state
+  const router = useRouter();
+
+  // Protect dashboard
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/"); // kick user back to welcome page
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+  if (status === "unauthenticated") {
+    return null; //  don’t render anything
+  }
 
   const handleAddExpense = () => {
     if (newExpense.amount && newExpense.category && newExpense.date) {
@@ -176,7 +174,7 @@ export default function RootLayout({
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <header className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 capitalize">
@@ -210,8 +208,7 @@ export default function RootLayout({
             </div>
           </div>
         </header>
-        {/* Content */}
-        {children}
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   );

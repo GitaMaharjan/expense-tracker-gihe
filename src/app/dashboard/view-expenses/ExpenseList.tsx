@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Trash2, Edit } from "lucide-react";
+import EditExpenseModal from "../edit-expense/page";
 
 export default function ExpenseList({ initialExpenses }: any) {
   const [expenses, setExpenses] = useState(initialExpenses?.data || []);
@@ -11,6 +12,7 @@ export default function ExpenseList({ initialExpenses }: any) {
     try {
       const res = await fetch(`/api/expenses/delete-expense/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
       if (res.ok) {
         setExpenses(expenses.filter((e: any) => e._id !== id));
@@ -63,9 +65,18 @@ export default function ExpenseList({ initialExpenses }: any) {
             >
               <Trash2 className="w-5 h-5 text-red-600" />
             </button>
-            <button className="p-1 rounded hover:bg-gray-200">
+            <EditExpenseModal
+              expense={expense}
+              onUpdated={(updated: any) =>
+                setExpenses((prev: any) =>
+                  prev.map((e: any) => (e._id === updated._id ? updated : e))
+                )
+              }
+            />
+
+            {/* <button className="p-1 rounded hover:bg-gray-200">
               <Edit className="w-5 h-5 text-gray-600" />
-            </button>
+            </button> */}
           </div>
         </div>
       ))}

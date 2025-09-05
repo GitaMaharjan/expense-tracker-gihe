@@ -59,6 +59,7 @@ export const authOptions: NextAuthOptions = {
         // 6. If everything is good, return the user object
         // Returning the user tells NextAuth: "this user is authenticated"
         return user;
+
       },
     }),
   ],
@@ -68,18 +69,20 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt", // store session info in a signed JWT instead of database
   },
   callbacks: {
-  async jwt({ token, user }) {
-    if (user) {
-      token._id = user._id; // or user.id
-    }
-    return token;
-  },
-  async session({ session, token }) {
-    if (session.user) {
-      session.user._id = token._id as string;
-    }
-    return session;
-  },
-}
+    async jwt({ token, user }) {
+      if (user) {
+        // Make sure to stringify ObjectId
+        token.id = user._id.toString();
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  }
+
 
 };

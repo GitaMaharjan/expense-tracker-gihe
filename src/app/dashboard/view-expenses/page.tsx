@@ -1,7 +1,10 @@
 import ExpenseList from "./ExpenseList";
 
 const getExpenses = async () => {
-  const res = await fetch(`${process.env.BASE_URI}/api/expenses/get-expenses`);
+  const res = await fetch(`${process.env.BASE_URI}/api/expenses/get-expenses`, {
+    // cache: "no-store",
+    credentials: "include",
+  });
   const data = await res.json();
   return data;
 };
