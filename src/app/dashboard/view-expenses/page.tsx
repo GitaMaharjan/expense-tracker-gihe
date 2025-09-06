@@ -1,3 +1,4 @@
+import ExpenseControl from "./ExpenseControl";
 import ExpenseList from "./ExpenseList";
 
 const getExpenses = async () => {
@@ -14,6 +15,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-6">
+      <ExpenseControl />
       <ExpenseList initialExpenses={expenses} />
     </div>
   );

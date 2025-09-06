@@ -267,11 +267,8 @@ export default function Page() {
                       "Transport",
                       "Entertainment",
                       "Shopping",
-                      "Bills",
-                      "Healthcare",
-                      "Salary",
-                      "Freelance",
-                      "Investment",
+                      "Rent",
+                      "Health",
                       "Other",
                     ].map((cat) => (
                       <SelectItem key={cat} value={cat}>

@@ -3,7 +3,6 @@ import Expense from "@/models/Expense";
 
 export async function GET(){
     await connectDB();
-
     try {
     await connectDB();
 
