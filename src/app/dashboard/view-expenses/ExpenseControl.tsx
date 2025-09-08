@@ -1,11 +1,35 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 
-function ExpenseControl() {
+export interface Filters {
+  category?: string;
+  type?: string;
+}
+
+interface ExpenseControlProps {
+  onFilterChange: (filters: Filters) => void;
+}
+export const ExpenseControl: React.FC<ExpenseControlProps> = ({
+  onFilterChange,
+}) => {
+  const [category, setCategory] = useState("");
+  const [type, setType] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onFilterChange({ category, type });
+    }, 300); // Debounce by 300ms
+    return () => clearTimeout(timer);
+  }, [category, type]);
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex gap-2">
-        {/* Category Dropdown (static data) */}
-        <select className="border text-sm px-2 py-1 rounded">
+        <select
+          className="border text-sm px-2 py-1 rounded"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="">All Categories</option>
           <option value="Food">Food</option>
           <option value="Transport">Transport</option>
@@ -16,15 +40,15 @@ function ExpenseControl() {
           <option value="Other">Other</option>
         </select>
 
-        <select className="border text-sm px-2 py-1 rounded">
+        <select
+          className="border text-sm px-2 py-1 rounded"
+          value={type}
+          onChange={(e) => setType(e.target.value)}
+        >
           <option value="">All Types</option>
           <option value="Income">Income</option>
           <option value="Expense">Expense</option>
         </select>
-
-        {/* <button className="bg-blue-500 text-white text-sm px-3 py-1 rounded">
-          Apply
-        </button> */}
       </div>
 
       <div className="flex gap-2">
@@ -36,13 +60,7 @@ function ExpenseControl() {
           <option value="date-asc">Date (Oldest First)</option>
           <option value="date-desc">Date (Newest First)</option>
         </select>
-
-        {/* <button className="bg-blue-500 text-white text-sm px-3 py-1 rounded">
-          Apply
-        </button> */}
       </div>
     </div>
   );
-}
-
-export default ExpenseControl;
+};

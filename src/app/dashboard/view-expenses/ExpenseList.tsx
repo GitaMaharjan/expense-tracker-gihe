@@ -1,12 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Trash2, Edit } from "lucide-react";
+import { TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import EditExpenseModal from "../edit-expense/page";
 
-export default function ExpenseList({ initialExpenses }: any) {
-  const [expenses, setExpenses] = useState(initialExpenses?.data || []);
+export interface Expense {
+  _id: string;
+  description: string;
+  category: string;
+  type: string;
+  amount: number;
+  createdAt: Date;
+}
+
+interface ExpenseListProps {
+  filters: { category?: string; type?: string };
+}
+
+export default function ExpenseList({ filters }: ExpenseListProps) {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch expenses whenever filters change
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      setLoading(true);
+
+      // Build query params from filters
+      const params = new URLSearchParams();
+      if (filters.category) params.append("category", filters.category);
+      if (filters.type) params.append("type", filters.type);
+
+      try {
+        const res = await fetch(
+          `/api/expenses/filter-expenses?${params.toString()}`,
+          {
+            credentials: "include",
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch expenses");
+
+        const data = await res.json();
+        if (data.success) setExpenses(data.data);
+        else setExpenses([]);
+      } catch (error) {
+        console.error(error);
+        setExpenses([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, [filters]);
 
   const deleteExpense = async (id: string) => {
     try {
@@ -15,7 +63,7 @@ export default function ExpenseList({ initialExpenses }: any) {
         credentials: "include",
       });
       if (res.ok) {
-        setExpenses(expenses.filter((e: any) => e._id !== id));
+        setExpenses((prev) => prev.filter((e) => e._id !== id));
       } else {
         console.error(await res.text());
       }
@@ -24,9 +72,12 @@ export default function ExpenseList({ initialExpenses }: any) {
     }
   };
 
+  if (loading) return <p>Loading expenses...</p>;
+  if (expenses.length === 0) return <p>No expenses found.</p>;
+
   return (
     <div className="space-y-4">
-      {expenses.map((expense: any) => (
+      {expenses.map((expense) => (
         <div
           key={expense._id}
           className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
@@ -34,10 +85,10 @@ export default function ExpenseList({ initialExpenses }: any) {
           <div className="flex items-center gap-4">
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                expense.type === "income" ? "bg-emerald-100" : "bg-red-100"
+                expense.type === "Income" ? "bg-emerald-100" : "bg-red-100"
               }`}
             >
-              {expense.type === "income" ? (
+              {expense.type === "Income" ? (
                 <TrendingUp className="w-6 h-6 text-emerald-600" />
               ) : (
                 <TrendingDown className="w-6 h-6 text-red-600" />
@@ -47,16 +98,19 @@ export default function ExpenseList({ initialExpenses }: any) {
               <p className="font-medium text-gray-900">{expense.description}</p>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary">{expense.category}</Badge>
-                <span className="text-sm text-gray-500">{expense.date}</span>
+                <span className="text-sm text-gray-500">
+                  {/* {new Date(expense.createdAt).toLocaleDateString()} */}
+                  {new Date(expense.date).toLocaleDateString()}
+                </span>
               </div>
             </div>
           </div>
           <div
             className={`text-xl font-bold ${
-              expense.type === "income" ? "text-emerald-600" : "text-red-600"
+              expense.type === "Income" ? "text-emerald-600" : "text-red-600"
             }`}
           >
-            {expense.type === "income" ? "+" : "-"}${expense.amount.toFixed(2)}
+            {expense.type === "Income" ? "+" : "-"}${expense.amount.toFixed(2)}
           </div>
           <div className="flex gap-2 mt-2">
             <button
@@ -68,15 +122,13 @@ export default function ExpenseList({ initialExpenses }: any) {
             <EditExpenseModal
               expense={expense}
               onUpdated={(updated: any) =>
-                setExpenses((prev: any) =>
-                  prev.map((e: any) => (e._id === updated._id ? updated : e))
+                setExpenses((prev) =>
+                  prev.map((expense) =>
+                    expense._id === updated._id ? updated : expense
+                  )
                 )
               }
             />
-
-            {/* <button className="p-1 rounded hover:bg-gray-200">
-              <Edit className="w-5 h-5 text-gray-600" />
-            </button> */}
           </div>
         </div>
       ))}
