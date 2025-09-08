@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import EditExpenseModal from "../edit-expense/page";
+import { useRouter } from "next/navigation";
 
 export interface Expense {
   _id: string;
@@ -15,12 +16,14 @@ export interface Expense {
 }
 
 interface ExpenseListProps {
-  filters: { category?: string; type?: string };
+  filters: { category?: string; type?: string; sort?: string };
 }
 
 export default function ExpenseList({ filters }: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   // Fetch expenses whenever filters change
   useEffect(() => {
@@ -31,6 +34,7 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
       const params = new URLSearchParams();
       if (filters.category) params.append("category", filters.category);
       if (filters.type) params.append("type", filters.type);
+      if (filters.sort) params.append("sort", filters.sort);
 
       try {
         const res = await fetch(
@@ -45,6 +49,7 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
         const data = await res.json();
         if (data.success) setExpenses(data.data);
         else setExpenses([]);
+        router.replace(`/dashboard/view-expenses?${params.toString()}`);
       } catch (error) {
         console.error(error);
         setExpenses([]);

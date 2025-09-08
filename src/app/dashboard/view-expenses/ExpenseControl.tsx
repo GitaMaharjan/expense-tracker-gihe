@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 export interface Filters {
   category?: string;
   type?: string;
+  sort?: string;
 }
 
 interface ExpenseControlProps {
@@ -14,13 +15,14 @@ export const ExpenseControl: React.FC<ExpenseControlProps> = ({
 }) => {
   const [category, setCategory] = useState("");
   const [type, setType] = useState("");
+  const [sort, setSort] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      onFilterChange({ category, type });
+      onFilterChange({ category, type, sort });
     }, 300); // Debounce by 300ms
     return () => clearTimeout(timer);
-  }, [category, type]);
+  }, [category, type, sort, onFilterChange]);
 
   return (
     <div className="flex justify-between items-center">
@@ -53,7 +55,11 @@ export const ExpenseControl: React.FC<ExpenseControlProps> = ({
 
       <div className="flex gap-2">
         {/* Sort Dropdown */}
-        <select className="border text-sm px-2 py-1 rounded">
+        <select
+          className="border text-sm px-2 py-1 rounded"
+          value={sort}
+          onChange={(expense) => setSort(expense.target.value)}
+        >
           <option value="">Sort By</option>
           <option value="amount-asc">Amount (Low → High)</option>
           <option value="amount-desc">Amount (High → Low)</option>
