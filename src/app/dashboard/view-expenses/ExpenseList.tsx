@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import EditExpenseModal from "../edit-expense/page";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "@/components/ui/confirm-modal/ConfirmModal";
+import { toast } from "sonner";
 
 export interface Expense {
   _id: string;
@@ -12,7 +14,7 @@ export interface Expense {
   category: string;
   type: string;
   amount: number;
-  createdAt: Date;
+  date: Date;
 }
 
 interface ExpenseListProps {
@@ -22,6 +24,8 @@ interface ExpenseListProps {
 export default function ExpenseList({ filters }: ExpenseListProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -76,6 +80,25 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
       console.error(error);
     }
   };
+  const deleteAllExpenses = async () => {
+    try {
+      const res = await fetch("/api/expenses/delete-all", {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setExpenses([]);
+        setIsModalOpen(false);
+        toast.success("All expenses deleted successfully");
+      } else {
+        console.error(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   if (loading) return <p>Loading expenses...</p>;
   if (expenses.length === 0) return <p>No expenses found.</p>;
@@ -90,10 +113,10 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
           <div className="flex items-center gap-4">
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                expense.type === "Income" ? "bg-emerald-100" : "bg-red-100"
+                expense.type === "income" ? "bg-emerald-100" : "bg-red-100"
               }`}
             >
-              {expense.type === "Income" ? (
+              {expense.type === "income" ? (
                 <TrendingUp className="w-6 h-6 text-emerald-600" />
               ) : (
                 <TrendingDown className="w-6 h-6 text-red-600" />
@@ -112,10 +135,10 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
           </div>
           <div
             className={`text-xl font-bold ${
-              expense.type === "Income" ? "text-emerald-600" : "text-red-600"
+              expense.type === "income" ? "text-emerald-600" : "text-red-600"
             }`}
           >
-            {expense.type === "Income" ? "+" : "-"}${expense.amount.toFixed(2)}
+            {expense.type === "income" ? "+" : "-"}${expense.amount.toFixed(2)}
           </div>
           <div className="flex gap-2 mt-2">
             <button
@@ -137,6 +160,22 @@ export default function ExpenseList({ filters }: ExpenseListProps) {
           </div>
         </div>
       ))}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          <Trash2 className="w-5 h-5" />
+          Delete All
+        </button>
+      </div>
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        onConfirm={deleteAllExpenses}
+        title="Delete All Expenses"
+        message="Are you sure you want to delete all expenses? This action cannot be undone."
+      />
     </div>
   );
 }
