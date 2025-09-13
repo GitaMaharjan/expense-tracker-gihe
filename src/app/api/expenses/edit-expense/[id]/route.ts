@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import Expense from "@/models/Expense";
 import { getServerSession } from "next-auth/next";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
 
     try {
         await connectDB();

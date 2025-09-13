@@ -42,7 +42,7 @@ export default function EditExpenseModal({ expense, onUpdated }: any) {
 
     try {
       const res = await fetch(`/api/expenses/edit-expense/${expense._id}`, {
-        method: "PUT",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
