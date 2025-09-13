@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-import { Wallet } from "lucide-react";
+import { LogOut, Wallet } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { Routes } from "@/lib/dashboard-route";
 import * as Icons from "lucide-react";
@@ -23,32 +23,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [expenses, setExpenses] = useState<Expense[]>([
-    {
-      id: "1",
-      amount: 1200,
-      category: "Salary",
-      description: "Monthly salary",
-      date: "2024-01-15",
-      type: "income",
-    },
-    {
-      id: "2",
-      amount: 85.5,
-      category: "Food",
-      description: "Grocery shopping",
-      date: "2024-01-14",
-      type: "expense",
-    },
-    {
-      id: "3",
-      amount: 45.0,
-      category: "Transport",
-      description: "Gas for car",
-      date: "2024-01-13",
-      type: "expense",
-    },
-  ]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const [newExpense, setNewExpense] = useState({
     amount: "",
@@ -77,44 +52,6 @@ export default function RootLayout({
   if (status === "unauthenticated") {
     return null; //  don’t render anything
   }
-
-  const handleAddExpense = () => {
-    if (newExpense.amount && newExpense.category && newExpense.date) {
-      const expense: Expense = {
-        id: Date.now().toString(),
-        amount: Number.parseFloat(newExpense.amount),
-        category: newExpense.category,
-        description: newExpense.description,
-        date: newExpense.date,
-        type: newExpense.type,
-      };
-      setExpenses([expense, ...expenses]);
-      setNewExpense({
-        amount: "",
-        category: "",
-        description: "",
-        date: "",
-        type: "expense",
-      });
-    }
-  };
-
-  const totalIncome = expenses
-    .filter((e) => e.type === "income")
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const totalExpenses = expenses
-    .filter((e) => e.type === "expense")
-    .reduce((sum, e) => sum + e.amount, 0);
-
-  const balance = totalIncome - totalExpenses;
-
-  const categoryTotals = expenses
-    .filter((e) => e.type === "expense")
-    .reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
-      return acc;
-    }, {} as Record<string, number>);
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -156,20 +93,28 @@ export default function RootLayout({
             })}
           </div>
         </nav>
-
-        {/* Balance Summary */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="expense-card p-4">
-            <div className="text-sm text-gray-500 mb-1">Current Balance</div>
-            <div
-              className={`text-2xl font-bold ${
-                balance >= 0 ? "text-emerald-600" : "text-red-600"
-              }`}
-            >
-              ${balance.toFixed(2)}
-            </div>
-          </div>
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-2 p-4 border-t border-gray-200 cursor-pointer"
+          onClick={() => signOut({ callbackUrl: "/" })}
+          onKeyDown={(e) =>
+            (e.key === "Enter" || e.key === " ") &&
+            signOut({ callbackUrl: "/" })
+          }
+        >
+          <LogOut className="w-5 h-5 text-gray-600" />
+          <span className="text-gray-800">Sign out</span>
         </div>
+
+        {/* <div
+          className="p-4 border-t border-gray-200"
+          onClick={() => signOut({ callbackUrl: "/" })}
+        >
+          <Button onClick={() => signOut({ callbackUrl: "/" })}>
+          Sign out
+          </Button>
+        </div> */}
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -199,11 +144,6 @@ export default function RootLayout({
                   month: "long",
                   day: "numeric",
                 })}
-              </div>
-              <div>
-                <Button onClick={() => signOut({ callbackUrl: "/" })}>
-                  Sign out
-                </Button>
               </div>
             </div>
           </div>
