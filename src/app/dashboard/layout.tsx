@@ -1,0 +1,155 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+
+import { LogOut, Wallet } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Routes } from "@/lib/dashboard-route";
+import * as Icons from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+
+interface Expense {
+  id: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+  type: "income" | "expense";
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+
+  const [newExpense, setNewExpense] = useState({
+    amount: "",
+    category: "",
+    description: "",
+    date: "",
+    type: "expense" as "income" | "expense",
+  });
+  const activeTab = usePathname();
+  const currentRoute = Routes().find(
+    (route) => route.path.trim() === activeTab.trim()
+  );
+  const { status } = useSession(); // get session state
+  const router = useRouter();
+
+  // Protect dashboard
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/"); // kick user back to welcome page
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+  if (status === "unauthenticated") {
+    return null; //  don’t render anything
+  }
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      <div className="w-64 sidebar-gradient border-r border-gray-200 flex flex-col">
+        {/* Logo */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+              <Wallet className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">
+                ExpenseTracker
+              </h1>
+              <p className="text-sm text-gray-500">Financial Dashboard</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <div className="space-y-2">
+            {Routes().map((route) => {
+              const Icon: any = Icons[route.icon as keyof typeof Icons];
+              return (
+                <button
+                  key={route.id}
+                  onClick={() => router.push(route.path)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    activeTab === route.id
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{route.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex items-center gap-2 p-4 border-t border-gray-200 cursor-pointer"
+          onClick={() => signOut({ callbackUrl: "/" })}
+          onKeyDown={(e) =>
+            (e.key === "Enter" || e.key === " ") &&
+            signOut({ callbackUrl: "/" })
+          }
+        >
+          <LogOut className="w-5 h-5 text-gray-600" />
+          <span className="text-gray-800">Sign out</span>
+        </div>
+
+        {/* <div
+          className="p-4 border-t border-gray-200"
+          onClick={() => signOut({ callbackUrl: "/" })}
+        >
+          <Button onClick={() => signOut({ callbackUrl: "/" })}>
+          Sign out
+          </Button>
+        </div> */}
+      </div>
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Header */}
+        <header className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 capitalize">
+                {currentRoute?.label}
+              </h2>
+              <p className="text-gray-500">
+                {activeTab.includes("overview") &&
+                  "Track your financial overview"}
+                {activeTab.includes("add-expense") &&
+                  "Add a new income or expense"}
+                {activeTab.includes("all-expenses") &&
+                  "View all your transactions"}
+                {activeTab.includes("report") &&
+                  "Analyze your spending patterns"}
+              </p>
+            </div>
+            <div>
+              <div className="text-sm text-gray-500">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+            </div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+    </div>
+  );
+}
